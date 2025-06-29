@@ -1,15 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { getLogs, getDevices } from './api';
+import { getLogs, getDevices, LogEntry } from './api'; // Import LogEntry type
 import LogViewer from './components/LogViewer';
 import CpuUsageChart from './components/CpuUsageChart';
 import ResponseTimeChart from './components/ResponseTimeChart';
 
-function App() {
-    const [logs, setLogs] = useState([]);
-    const [devices, setDevices] = useState([]);
-    const [selectedDevice, setSelectedDevice] = useState('');
-    const [selectedLevel, setSelectedLevel] = useState('');
-    const [loading, setLoading] = useState(false);
+const App: React.FC = () => {
+    // Type the state variables
+    const [logs, setLogs] = useState<LogEntry[]>([]);
+    const [devices, setDevices] = useState<string[]>([]);
+    const [selectedDevice, setSelectedDevice] = useState<string>('');
+    const [selectedLevel, setSelectedLevel] = useState<string>('');
+    const [loading, setLoading] = useState<boolean>(false);
 
     const fetchData = useCallback(async () => {
         setLoading(true);
@@ -34,19 +35,28 @@ function App() {
         fetchData();
     };
 
+    // Type the event for the select handlers
+    const handleDeviceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setSelectedDevice(e.target.value);
+    };
+
+    const handleLevelChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setSelectedLevel(e.target.value);
+    };
+
     return (
         <div className="App">
             <h1>LiveWatch Dashboard</h1>
 
             <div className="dashboard-controls">
                 <div className="filters">
-                    <select value={selectedDevice} onChange={(e) => setSelectedDevice(e.target.value)}>
+                    <select value={selectedDevice} onChange={handleDeviceChange}>
                         <option value="">All Devices</option>
                         {devices.map(device => (
                             <option key={device} value={device}>{device}</option>
                         ))}
                     </select>
-                    <select value={selectedLevel} onChange={(e) => setSelectedLevel(e.target.value)}>
+                    <select value={selectedLevel} onChange={handleLevelChange}>
                         <option value="">All Log Levels</option>
                         <option value="INFO">INFO</option>
                         <option value="WARN">WARN</option>

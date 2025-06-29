@@ -1,7 +1,13 @@
 import React from 'react';
 import { format } from 'date-fns';
+import { LogEntry } from '../api'; // Import the type
 
-const LogViewer = ({ logs }) => {
+// Define the props type for this component
+interface LogViewerProps {
+    logs: LogEntry[];
+}
+
+const LogViewer: React.FC<LogViewerProps> = ({ logs }) => {
     return (
         <div className="log-viewer-container">
             <h2>Latest Logs</h2>
@@ -19,7 +25,8 @@ const LogViewer = ({ logs }) => {
                     </thead>
                     <tbody>
                         {logs.map((log, index) => (
-                            <tr key={index}>
+                            // Use a more robust key than just the index
+                            <tr key={`${log.timestamp}-${index}`}>
                                 <td>{format(new Date(log.timestamp), 'yyyy-MM-dd HH:mm:ss')}</td>
                                 <td>{log.deviceId}</td>
                                 <td>{log.logLevel}</td>

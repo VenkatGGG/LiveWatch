@@ -1,0 +1,33 @@
+import React from 'react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { format } from 'date-fns';
+
+const CpuUsageChart = ({ data }) => {
+    const chartData = data.map(log => ({
+        ...log,
+        time: new Date(log.timestamp),
+    })).sort((a, b) => a.time - b.time);
+
+    return (
+        <div className="chart-wrapper">
+            <h3>CPU Usage Over Time</h3>
+            <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis 
+                        dataKey="time" 
+                        tickFormatter={(time) => format(time, 'HH:mm:ss')}
+                        type="number"
+                        domain={['dataMin', 'dataMax']}
+                    />
+                    <YAxis domain={[0, 100]} label={{ value: '%', angle: -90, position: 'insideLeft' }} />
+                    <Tooltip labelFormatter={(label) => format(new Date(label), 'HH:mm:ss')}/>
+                    <Legend />
+                    <Line type="monotone" dataKey="cpuUsage" stroke="#8884d8" name="CPU Usage" dot={false} />
+                </LineChart>
+            </ResponsiveContainer>
+        </div>
+    );
+};
+
+export default CpuUsageChart;

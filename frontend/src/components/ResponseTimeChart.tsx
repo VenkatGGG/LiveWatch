@@ -2,6 +2,7 @@ import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { format } from 'date-fns';
 import { LogEntry } from '../api';
+import { useTheme, Typography } from '@mui/material';
 
 // Define props and internal chart data types
 interface ChartProps {
@@ -13,6 +14,8 @@ interface ChartData extends LogEntry {
 }
 
 const ResponseTimeChart: React.FC<ChartProps> = ({ data }) => {
+    const theme = useTheme();
+
     // Convert and sort data for the chart
     const chartData: ChartData[] = data.map(log => ({
         ...log,
@@ -20,25 +23,43 @@ const ResponseTimeChart: React.FC<ChartProps> = ({ data }) => {
     })).sort((a, b) => a.time.getTime() - b.time.getTime());
 
     return (
-        <div className="chart-wrapper">
-            <h3>Response Time Over Time</h3>
-            <ResponsiveContainer width="100%" height={300}>
+        <React.Fragment>
+            <Typography component="h2" variant="h6" color="primary" gutterBottom>
+                Response Time Over Time
+            </Typography>
+            <ResponsiveContainer>
                 <BarChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis 
-                        dataKey="time" 
+                    <XAxis
+                        dataKey="time"
                         tickFormatter={(time) => format(new Date(time), 'HH:mm:ss')}
                         type="number"
                         domain={['dataMin', 'dataMax']}
                         scale="time"
+                        stroke={theme.palette.text.secondary}
                     />
-                    <YAxis label={{ value: 'ms', angle: -90, position: 'insideLeft' }} />
-                    <Tooltip labelFormatter={(label) => format(new Date(label), 'HH:mm:ss')}/>
+                    <YAxis stroke={theme.palette.text.secondary}>
+                        <label
+                            x={0}
+                            y={0}
+                            dx={-10}
+                            dy={150}
+                            offset={0}
+                            angle={-90}
+                            fill={theme.palette.text.primary}
+                        >
+                            Response Time (ms)
+                        </label>
+                    </YAxis>
+                    <Tooltip
+                        labelFormatter={(label) => format(new Date(label), 'HH:mm:ss')}
+                        contentStyle={{ backgroundColor: theme.palette.background.paper }}
+                    />
                     <Legend />
-                    <Bar dataKey="responseTime" fill="#82ca9d" name="Response Time" />
+                    <Bar dataKey="responseTime" fill={theme.palette.secondary.main} name="Response Time" />
                 </BarChart>
             </ResponsiveContainer>
-        </div>
+        </React.Fragment>
     );
 };
 

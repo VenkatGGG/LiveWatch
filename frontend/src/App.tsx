@@ -1,21 +1,24 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { getLogs, getDevices, LogEntry } from './api'; // Import LogEntry type
+import { getLogs, getDevices, LogEntry } from './api';
 import LogViewer from './components/LogViewer';
 import CpuUsageChart from './components/CpuUsageChart';
 import ResponseTimeChart from './components/ResponseTimeChart';
+import { ThemeProvider, CssBaseline, AppBar, Toolbar, Typography, Container, Grid, Paper, Select, MenuItem, FormControl, InputLabel, Switch, FormGroup, FormControlLabel } from '@mui/material';
+import { lightTheme, darkTheme } from './theme';
+import { SelectChangeEvent } from '@mui/material';
 
 const App: React.FC = () => {
-    // Type the state variables
     const [logs, setLogs] = useState<LogEntry[]>([]);
     const [devices, setDevices] = useState<string[]>([]);
     const [selectedDevice, setSelectedDevice] = useState<string>('');
     const [selectedLevel, setSelectedLevel] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
+    const [darkMode, setDarkMode] = useState<boolean>(false);
 
     const fetchData = useCallback(async () => {
         setLoading(true);
         try {
-            const logsResponse = await getLogs(selectedDevice, selectedLevel);
+            const logsResponse = await getLogs(selectedDevice, selectedLevel, null, null);
             setLogs(logsResponse.data);
 
             const devicesResponse = await getDevices();
@@ -42,44 +45,84 @@ const App: React.FC = () => {
         };
     }, []);
 
-    // Type the event for the select handlers
-    const handleDeviceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setSelectedDevice(e.target.value);
+    const handleDeviceChange = (event: SelectChangeEvent) => {
+        setSelectedDevice(event.target.value as string);
     };
 
-    const handleLevelChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setSelectedLevel(e.target.value);
+    const handleLevelChange = (event: SelectChangeEvent) => {
+        setSelectedLevel(event.target.value as string);
+    };
+
+    const handleThemeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setDarkMode(event.target.checked);
     };
 
     return (
-        <div className="App">
-            <h1>LiveWatch Dashboard</h1>
-
-            <div className="dashboard-controls">
-                <div className="filters">
-                    <select value={selectedDevice} onChange={handleDeviceChange}>
-                        <option value="">All Devices</option>
-                        {devices.map(device => (
-                            <option key={device} value={device}>{device}</option>
-                        ))}
-                    </select>
-                    <select value={selectedLevel} onChange={handleLevelChange}>
-                        <option value="">All Log Levels</option>
-                        <option value="INFO">INFO</option>
-                        <option value="WARN">WARN</option>
-                        <option value="ERROR">ERROR</option>
-                        <option value="DEBUG">DEBUG</option>
-                    </select>
-                </div>
-            </div>
-
-            <div className="charts-container">
-                <CpuUsageChart data={logs} />
-                <ResponseTimeChart data={logs} />
-            </div>
-
-            <LogViewer logs={logs} />
-        </div>
+        <ThemeProvider theme={darkMode ? darkTheme : lightTheme}>
+            <CssBaseline />
+            <AppBar position="static">
+                <Toolbar>
+                    <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+                        LiveWatch Dashboard
+                    </Typography>
+                    <FormGroup>
+                        <FormControlLabel
+                            control={<Switch checked={darkMode} onChange={handleThemeChange} />}
+                            label="Dark Mode"
+                        />
+                    </FormGroup>
+                </Toolbar>
+            </AppBar>
+            <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
+                <Grid container spacing={3}>
+                    <Grid item xs={12}>
+                        <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
+                            <Typography variant="h6">Filters</Typography>
+                            <Grid container spacing={2} sx={{ mt: 1 }}>
+                                <Grid item xs={12} sm={6}>
+                                    <FormControl fullWidth>
+                                        <InputLabel>Device</InputLabel>
+                                        <Select value={selectedDevice} label="Device" onChange={handleDeviceChange}>
+                                            <MenuItem value=""><em>All Devices</em></MenuItem>
+                                            {devices.map(device => (
+                                                <MenuItem key={device} value={device}>{device}</MenuItem>
+                                            ))}
+                                        </Select>
+                                    </FormControl>
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                    <FormControl fullWidth>
+                                        <InputLabel>Log Level</InputLabel>
+                                        <Select value={selectedLevel} label="Log Level" onChange={handleLevelChange}>
+                                            <MenuItem value=""><em>All Log Levels</em></MenuItem>
+                                            <MenuItem value="INFO">INFO</MenuItem>
+                                            <MenuItem value="WARN">WARN</MenuItem>
+                                            <MenuItem value="ERROR">ERROR</MenuItem>
+                                            <MenuItem value="DEBUG">DEBUG</MenuItem>
+                                        </Select>
+                                    </FormControl>
+                                </Grid>
+                            </Grid>
+                        </Paper>
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                        <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', height: 400 }}>
+                            <CpuUsageChart data={logs} />
+                        </Paper>
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                        <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', height: 400 }}>
+                            <ResponseTimeChart data={logs} />
+                        </Paper>
+                    </Grid>
+                    <Grid item xs={12}>
+                        <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
+                            <LogViewer logs={logs} />
+                        </Paper>
+                    </Grid>
+                </Grid>
+            </Container>
+        </ThemeProvider>
     );
 }
 

@@ -17,9 +17,14 @@ const apiClient = axios.create({
 });
 
 // Type the function arguments and the expected generic return type from Axios
-export const getLogs = (deviceId: string, logLevel: string) => {
+export const getLogs = (deviceId: string, logLevel: string, start: Date | null, end: Date | null) => {
     return apiClient.get<LogEntry[]>('/logs', {
-        params: { deviceId, logLevel },
+        params: { 
+            deviceId, 
+            logLevel, 
+            start: start?.toISOString(), 
+            end: end?.toISOString() 
+        },
     });
 };
 

@@ -3,7 +3,8 @@ import { getLogs, getDevices, LogEntry } from './api';
 import LogViewer from './components/LogViewer';
 import CpuUsageChart from './components/CpuUsageChart';
 import ResponseTimeChart from './components/ResponseTimeChart';
-import { ThemeProvider, CssBaseline, AppBar, Toolbar, Typography, Container, Grid, Paper, Select, MenuItem, FormControl, InputLabel, Switch, FormGroup, FormControlLabel } from '@mui/material';
+import DateRangePicker from './components/DateRangePicker';
+import { ThemeProvider, CssBaseline, AppBar, Toolbar, Typography, Container, Grid, Paper, Select, MenuItem, FormControl, InputLabel, Switch, FormGroup, FormControlLabel, Button } from '@mui/material';
 import { lightTheme, darkTheme } from './theme';
 import { SelectChangeEvent } from '@mui/material';
 
@@ -12,13 +13,15 @@ const App: React.FC = () => {
     const [devices, setDevices] = useState<string[]>([]);
     const [selectedDevice, setSelectedDevice] = useState<string>('');
     const [selectedLevel, setSelectedLevel] = useState<string>('');
+    const [startDate, setStartDate] = useState<Date | null>(null);
+    const [endDate, setEndDate] = useState<Date | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [darkMode, setDarkMode] = useState<boolean>(false);
 
     const fetchData = useCallback(async () => {
         setLoading(true);
         try {
-            const logsResponse = await getLogs(selectedDevice, selectedLevel, null, null);
+            const logsResponse = await getLogs(selectedDevice, selectedLevel, startDate, endDate);
             setLogs(logsResponse.data);
 
             const devicesResponse = await getDevices();
@@ -28,7 +31,7 @@ const App: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    }, [selectedDevice, selectedLevel]);
+    }, [selectedDevice, selectedLevel, startDate, endDate]);
 
     useEffect(() => {
         fetchData();
@@ -79,7 +82,7 @@ const App: React.FC = () => {
                         <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
                             <Typography variant="h6">Filters</Typography>
                             <Grid container spacing={2} sx={{ mt: 1 }}>
-                                <Grid item xs={12} sm={6}>
+                                <Grid item xs={12} sm={4}>
                                     <FormControl fullWidth>
                                         <InputLabel>Device</InputLabel>
                                         <Select value={selectedDevice} label="Device" onChange={handleDeviceChange}>
@@ -90,7 +93,7 @@ const App: React.FC = () => {
                                         </Select>
                                     </FormControl>
                                 </Grid>
-                                <Grid item xs={12} sm={6}>
+                                <Grid item xs={12} sm={4}>
                                     <FormControl fullWidth>
                                         <InputLabel>Log Level</InputLabel>
                                         <Select value={selectedLevel} label="Log Level" onChange={handleLevelChange}>
@@ -102,7 +105,11 @@ const App: React.FC = () => {
                                         </Select>
                                     </FormControl>
                                 </Grid>
+                                <Grid item xs={12} sm={4}>
+                                    <DateRangePicker start={startDate} end={endDate} onStartChange={setStartDate} onEndChange={setEndDate} />
+                                </Grid>
                             </Grid>
+                            <Button variant="contained" onClick={fetchData} sx={{ mt: 2 }}>Apply Filter</Button>
                         </Paper>
                     </Grid>
                     <Grid item xs={12} md={6}>

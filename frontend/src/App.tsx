@@ -31,9 +31,16 @@ const App: React.FC = () => {
         fetchData();
     }, [fetchData]);
 
-    const handleRefresh = () => {
-        fetchData();
-    };
+    useEffect(() => {
+        const eventSource = new EventSource('http://localhost:8080/api/sse');
+        eventSource.onmessage = (event) => {
+            const newLog = JSON.parse(event.data);
+            setLogs((prevLogs) => [newLog, ...prevLogs]);
+        };
+        return () => {
+            eventSource.close();
+        };
+    }, []);
 
     // Type the event for the select handlers
     const handleDeviceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -64,9 +71,6 @@ const App: React.FC = () => {
                         <option value="DEBUG">DEBUG</option>
                     </select>
                 </div>
-                <button onClick={handleRefresh} disabled={loading} className="refresh-btn">
-                    {loading ? 'Refreshing...' : 'Refresh'}
-                </button>
             </div>
 
             <div className="charts-container">

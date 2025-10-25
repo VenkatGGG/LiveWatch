@@ -16,11 +16,13 @@ public class KafkaConsumerService {
 
     private final InfluxDBClient influxDBClient;
     private final ObjectMapper objectMapper;
+    private final SseService sseService;
 
     @Autowired
-    public KafkaConsumerService(InfluxDBClient influxDBClient, ObjectMapper objectMapper) {
+    public KafkaConsumerService(InfluxDBClient influxDBClient, ObjectMapper objectMapper, SseService sseService) {
         this.influxDBClient = influxDBClient;
         this.objectMapper = objectMapper;
+        this.sseService = sseService;
     }
 
     @KafkaListener(topics = "livewatch-logs", groupId = "livewatch-group")
@@ -32,6 +34,7 @@ public class KafkaConsumerService {
             try (WriteApi writeApi = influxDBClient.getWriteApi()) {
                 writeApi.writeMeasurement(WritePrecision.NS, logData);
                 System.out.println("Saved to InfluxDB: " + message);
+                sseService.sendSseEvent(logData);
             }
         } catch (Exception e) {
             System.err.println("Error processing message or writing to InfluxDB: " + e.getMessage());

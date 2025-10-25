@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,10 +23,10 @@ public class LogQueryService {
     @Value("${influxdb.bucket}")
     private String bucket;
 
-    public List<LogEntry> getLatestLogs(String deviceId, String logLevel) {
+    public List<LogEntry> getLatestLogs(String deviceId, String logLevel, Instant start, Instant end) {
         List<LogEntry> logs = new ArrayList<>();
         String fluxQuery = "from(bucket: \"" + bucket + "\")\n"
-                + "  |> range(start: -1h)\n"
+                + "  |> range(start: " + (start != null ? start.toString() : \"-1h\") + (end != null ? ", stop: " + end.toString() : \"\") + ")\n"
                 + "  |> filter(fn: (r) => r[\"_measurement\"] == \"logs\")\n";
 
         if (deviceId != null && !deviceId.isEmpty()) {
